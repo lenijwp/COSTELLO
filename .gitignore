@@ -1,0 +1,5 @@
+./data/DCs/*
+./data/results/*
+*.pyc
+*.pt
+./data/fixmodel/*
