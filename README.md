@@ -6,7 +6,8 @@ CRATE: A unified contrastive testing framework for Embedding API Service.
 1. `data` : It contains the dataset we used and the test suite we generated in our experiment.
 2. `Testing.py` : It contains the source codes of the validation stage in CRATE.
 3. `Evaluation.py` : It contains the source codes about how to construct the ground truth and evalute the test results by such as precsions.
-4. `Fixing.py` : It contains the source codes of our fixing experiment.
+4. `TrainDCs.py` : It contains the source codes about how to train 14 downstream  classifiers.
+5. `Fixing.py` : It contains the source codes of our fixing experiment.
 
 ```
 -Generator/
@@ -71,7 +72,7 @@ The optional Args are:
 |--epoch | the training epochs of classifiers | 100 |
 
 
-We provide the test suite used by our evluation at './data/contrast_set/ctest1.json', if you want to generate your own test suite, you can do like following:
+We provide the test suite used by our evluation at `./data/ctest1.json`, if you want to generate your own test suite, you can do like following:
 ```
 python buildContrastset --trans ./data/SA.json --input  ./data/sst_train.json --output XXX.json
 ```
