@@ -1,0 +1,16 @@
+{
+    "generate":
+            {
+                "type":"SentenceTrans",
+                "singleProperty":["SenWordFuzz"]
+            }
+}
+
+// {
+//     "generate":
+//             {
+//                 "type":"SentenceTrans",
+//                 "crossProperty":["swapGender","sentiSynonymSubstitution"]
+//             }
+//     
+// }
