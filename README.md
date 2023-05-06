@@ -1,6 +1,6 @@
 # Testing4LMaaS
 ## TL;DR
-CRATE: A unified contrastive testing framework for Embedding API Service.
+COSTELLO: Contrastive Testing for Large Language Model as a Service
 
 ## Repo Structure
 1. `data` : It contains the dataset we used and the test suite we generated in our experiment.
