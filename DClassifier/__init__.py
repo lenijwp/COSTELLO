@@ -6,9 +6,7 @@ import torch
 from torch import nn
 
 class simpleNet_1(nn.Module):
-    """
-    定义了一个简单的三层全连接神经网络，每一层都是线性的
-    """
+
     def __init__(self, in_dim, n_hidden_1, out_dim):
         super(simpleNet_1, self).__init__()
         self.layer1 = nn.Linear(in_dim, n_hidden_1)
@@ -20,9 +18,7 @@ class simpleNet_1(nn.Module):
         return x
 
 class simpleNet_2(nn.Module):
-    """
-    定义了一个简单的三层全连接神经网络，每一层都是线性的
-    """
+
     def __init__(self, in_dim, n_hidden_1, n_hidden_2, out_dim):
         super(simpleNet_2, self).__init__()
         self.layer1 = nn.Linear(in_dim, n_hidden_1)
@@ -36,17 +32,13 @@ class simpleNet_2(nn.Module):
         return x
  
 class Activation_Net(nn.Module):
-    """
-    在上面的simpleNet的基础上，在每层的输出部分添加了激活函数
-    """
+
     def __init__(self, in_dim, n_hidden_1, n_hidden_2, out_dim):
         super(Activation_Net, self).__init__()
         self.layer1 = nn.Sequential(nn.Linear(in_dim, n_hidden_1), nn.ReLU(True))
         self.layer2 = nn.Sequential(nn.Linear(n_hidden_1, n_hidden_2), nn.ReLU(True))
         self.layer3 = nn.Sequential(nn.Linear(n_hidden_2, out_dim))
-        """
-        这里的Sequential()函数的功能是将网络的层组合到一起。
-        """
+
  
     def forward(self, x):
         x = self.layer1(x)
@@ -55,17 +47,13 @@ class Activation_Net(nn.Module):
         return x
 
 class Activation_Net_tanh(nn.Module):
-    """
-    在上面的simpleNet的基础上，在每层的输出部分添加了激活函数
-    """
+
     def __init__(self, in_dim, n_hidden_1, n_hidden_2, out_dim):
         super(Activation_Net_tanh, self).__init__()
         self.layer1 = nn.Sequential(nn.Linear(in_dim, n_hidden_1), nn.Tanh())
         self.layer2 = nn.Sequential(nn.Linear(n_hidden_1, n_hidden_2), nn.Tanh())
         self.layer3 = nn.Sequential(nn.Linear(n_hidden_2, out_dim))
-        """
-        这里的Sequential()函数的功能是将网络的层组合到一起。
-        """
+
  
     def forward(self, x):
         x = self.layer1(x)
