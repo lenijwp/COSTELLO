@@ -9,6 +9,7 @@ from scipy.spatial.distance import cosine
 from numba import jit
 from scipy import stats
 import math
+import torch
 
 @jit
 def pairwise_euclidean_distance(matrix1, matrix2):
@@ -28,38 +29,22 @@ def pairwise_euclidean_distance(matrix1, matrix2):
     return distance_matrix
 
 
-def EuclideanDistance(x, y, batch_size=1000):
+def pairwise_euclidean_distance(X, Y):
     """
-    Calculate Euclidean Distance between two large matrices by splitting into smaller batches
-    :param x: Matrix x
-    :param y: Matrix y
-    :param batch_size: Size of each batch
-    :return: Euclidean distance matrix
+    计算两个向量数组的欧氏距离
+    :param X: 第一个向量数组，形状为 (m, d)，m 是向量数量，d 是向量维度
+    :param Y: 第二个向量数组，形状为 (n, d)，n 是向量数量，d 是向量维度
+    :return: 欧氏距离矩阵，形状为 (m, n)
     """
-    (rowx, colx) = x.shape
-    (rowy, coly) = y.shape
-    if colx != coly:
-        raise RuntimeError('colx must be equal with coly')
-
-    dis = np.zeros((rowx, rowy))
-
-    # Split matrices into batches based on row size
-    for i in trange(0, rowx, batch_size):
-        for j in range(0, rowy, batch_size):
-            x_batch = x[i:min(i+batch_size, rowx)]
-            y_batch = y[j:min(j+batch_size, rowy)]
-
-            # Calculate Euclidean distance for the current batch
-            xy = np.einsum('ij,kj->ik', x_batch, y_batch)
-            x2 = np.einsum('ij,ij->i', x_batch, x_batch)
-            y2 = np.einsum('ij,ij->i', y_batch, y_batch)
-            batch_dis = x2[:, None] + y2 - 2 * xy
-            batch_dis = np.sqrt(batch_dis)
-
-            # Assign the calculated distances to the corresponding indices in the result matrix
-            dis[i:min(i+batch_size, rowx), j:min(j+batch_size, rowy)] = batch_dis
-
-    return dis
+    # 将输入的数组转换为 PyTorch 的张量
+    device = 'cuda:0'
+    X_tensor = torch.tensor(X).to(device)
+    Y_tensor = torch.tensor(Y).to(device)
+    
+    # 计算欧氏距离
+    distance_matrix = torch.cdist(X_tensor, Y_tensor, p=2)
+    
+    return distance_matrix.cpu().numpy()
 
 def Calculate_distance(X1,X2,norm):
     diff=X1-X2
@@ -102,7 +87,7 @@ tmpdis = np.load('./tokens.npy')
 wordEmb = tmpdis
 print("wordEmb.shape:",wordEmb.shape)
 
-worddis = EuclideanDistance(wordEmb,wordEmb)
+worddis = pairwise_euclidean_distance(wordEmb,wordEmb)
 for i in range(worddis.shape[0]):
     worddis[i][i]=10000000
 

@@ -147,11 +147,11 @@ for thres in [args.thres]:
         logger.info('Test ori bugs : {}'.format(mm>>8))
 
         
-        # mm = os.system("python v4-TrainDCs.py --dataset {} --validation {} --gpu {} --plm {} --output_dir {} ".format(train_data_sst,valid_data_sst,gpu_id, plms[i], dc_dirs_sst))
-        # logger.info('Train ori dcs on sst : {}'.format(mm>>8))
+        mm = os.system("python v4-TrainDCs.py --dataset {} --validation {} --gpu {} --plm {} --output_dir {} ".format(train_data_sst,valid_data_sst,gpu_id, plms[i], dc_dirs_sst))
+        logger.info('Train ori dcs on sst : {}'.format(mm>>8))
 
-        # mm = os.system("python v4-TrainDCs.py --dataset {} --validation {} --gpu {} --plm {} --output_dir {} ".format(train_data_mrpc,valid_data_mrpc,gpu_id, plms[i], dc_dirs_mrpc))
-        # logger.info('Train ori dcs on mrpc : {}'.format(mm>>8))
+        mm = os.system("python v4-TrainDCs.py --dataset {} --validation {} --gpu {} --plm {} --output_dir {} ".format(train_data_mrpc,valid_data_mrpc,gpu_id, plms[i], dc_dirs_mrpc))
+        logger.info('Train ori dcs on mrpc : {}'.format(mm>>8))
 
 
 

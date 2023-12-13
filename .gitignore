@@ -5,3 +5,4 @@ data/results/
 *.bin
 data/fixmodel/
 SupplementaryExp/**/*.npy
+SupplementaryExp/LLaMA2/*.json

@@ -33,7 +33,7 @@ To get the ground truth and evaluate the test results:
 ```
 python TrainDCs.py --dataset ./data/sst_train.json --plm bert-base-uncased --gpu 1 --output_dir ./data/DCs/
 
-python Evaluation.py --bugs ./data/results/bert.json --contrastset ./data/ctset1.json --plm bert-base-uncased --dclf_dir ./data/DCs/ --gpu 1 --results ./data/results/eval.json
+python Evaluation-DCs.py --bugs ./data/results/bert.json --contrastset ./data/ctset1.json --plm bert-base-uncased --dclf_dir ./data/DCs/ --gpu 1 --results ./data/results/eval.json
 ```
 
 To fix the LLM by test results:
