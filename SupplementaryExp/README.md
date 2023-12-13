@@ -8,13 +8,12 @@ bash script.sh
 ```
 ## Results
 Here is our evaluation result:
+
 ![Results](./results.png)
 
-COSTELLO also exhibits remarkable effectiveness on BART and T5. 
-While its performance on embeddings from LLaMA2 and OpenAI is comparatively lower, it suggests that OpenAI offers higher-quality embeddings,i.e., downstream applications trained on these embeddings exhibit superior performance with less violation of our contrastive relationships, aligning with our expectations to the current state-of-the-art LLMs.
+COSTELLO also exhibits qualified effectiveness onth BART and T5. There's a decline in test precision on embeddings provided by LLaMA2 and particularly OpenAI.
+However, this observation suggests that OpenAI potentially provides higher-quality embeddings, resulting in downstream applications achieve superior performance with fewer violations of contrastive relationships. 
+This aligns well with our expectations regarding the current state-of-the-art LLMs, as they have demonstrated remarkable performance across various tasks.
 
-The reason for the declining test precision may be that OpenAI and LLaMA2 provide higher dimensional embeddings, making the analysis more challenging. Also they employ more complex tokenizers, i.e., the lexicon we use to compute thresholds may be less suitable for these latest LLMs.
-In our fature work, we will enhance testing effectiveness by exploring more adaptable lexicons for recent LLMs.
-
-
-
+The decline in test precision might be attributed to higher-dimensional embeddings provided by OpenAI and LLaMA2, which pose more challenges. Additionally, these latest LLMs utilize more complex tokenizers, potentially rendering our lexicon (which is used for threshold computation) less suitable for them.
+In our future plan, we aim to enhance testing effectiveness by exploring more adaptable lexicons tailored for recent LLMs.

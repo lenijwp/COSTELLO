@@ -30,12 +30,7 @@ def pairwise_euclidean_distance(matrix1, matrix2):
 
 
 def pairwise_euclidean_distance(X, Y):
-    """
-    计算两个向量数组的欧氏距离
-    :param X: 第一个向量数组，形状为 (m, d)，m 是向量数量，d 是向量维度
-    :param Y: 第二个向量数组，形状为 (n, d)，n 是向量数量，d 是向量维度
-    :return: 欧氏距离矩阵，形状为 (m, n)
-    """
+
     # 将输入的数组转换为 PyTorch 的张量
     device = 'cuda:0'
     X_tensor = torch.tensor(X).to(device)
