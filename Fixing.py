@@ -110,15 +110,22 @@ def EuclideanDistance(x, y):
     dis = x2 + y2 - 2 * xy
     return dis
 
+# @jit
+# def ManhattanDistance(x, y):
+#     dis = np.zeros((x.shape[0],y.shape[0]))
+
+#     for i in range(x.shape[0]):
+#         for j in range(y.shape[0]):
+#             dis[i][j] = np.linalg.norm(x[i]-y[j],ord=1)
+
+#     return dis
+
 @jit
 def ManhattanDistance(x, y):
-    dis = np.zeros((x.shape[0],y.shape[0]))
-
-    for i in range(x.shape[0]):
-        for j in range(y.shape[0]):
-            dis[i][j] = np.linalg.norm(x[i]-y[j],ord=1)
-
-    return dis
+    
+    differences = np.abs(x[:, np.newaxis, :] - x[np.newaxis, :, :])
+    distances = differences.sum(axis=-1)
+    return distances
 
 @jit
 def CosineDistance(x, y):
@@ -130,16 +137,13 @@ def CosineDistance(x, y):
     return dist
 
 
-def GetThreshold(thres):
-
-    if thres=='zero':
-        return 0
-
+def GetThreshold(norm,threstype,savecache=None, token_dict_path=''):
     global tokenizer
 
-    wordset = tokenizer.get_vocab()
-
-    
+    if token_dict_path=='':
+        wordset = tokenizer.get_vocab()
+    else:
+        wordset = LoadJson(token_dict_path)
 
     wordEmb=[]
 
@@ -168,7 +172,13 @@ def GetThreshold(thres):
 
     wordEmb = np.array(wordEmb)
 
-    worddis = EuclideanDistance(wordEmb,wordEmb)
+
+    if norm=='l1':
+        worddis = ManhattanDistance(wordEmb,wordEmb)
+    elif norm=='l2':
+        worddis = EuclideanDistance(wordEmb,wordEmb)
+    elif norm=='cos':
+        worddis = CosineDistance(wordEmb,wordEmb)
     for i in range(worddis.shape[0]):
         worddis[i][i]=10000000
 
@@ -178,18 +188,43 @@ def GetThreshold(thres):
     for i in range(worddis.shape[0]):
         closeDis[i] = worddis[i].min()
 
-    # if savecache!=None:
-    #     np.save(savecache, closeDis)
+    if savecache!=None:
+        np.save(savecache, closeDis)
 
     dist = getattr(stats, 'norm')
     parameters = dist.fit(closeDis)
 
-    if thres=='m1s':
-        th = parameters[0]-math.sqrt(parameters[1])
-    if thres=='m2s':
+    if threstype=='2sigma':
         th = parameters[0]-2*math.sqrt(parameters[1])
-    if thres=='min':
+    elif threstype=='1sigma':
+        th = parameters[0]-math.sqrt(parameters[1])
+    elif threstype=='min':
         th = min(closeDis)
+
+
+    
+
+    if th<0:
+        th=0
+
+    return th
+
+
+def GetThresholdfromCache(norm,threstype,path):
+
+    closeDis=np.load(path)
+
+    dist = getattr(stats, 'norm')
+    parameters = dist.fit(closeDis)
+    if threstype=='2sigma':
+        th = parameters[0]-2*math.sqrt(parameters[1])
+    elif threstype=='1sigma':
+        th = parameters[0]-math.sqrt(parameters[1])
+    elif threstype=='min':
+        th = min(closeDis)
+
+    #th = parameters[0]
+
 
     if th<0:
         th=0
@@ -300,7 +335,7 @@ def fixTraining(net, data_loader, ref_Loader,train_optimizer, device,TH):
 
     tmp=[]
 
-    alpha = 0.4
+    alpha = 0.5
 
     accumulation_steps= 8
 
@@ -464,7 +499,7 @@ def test(net, device, Th):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--contrastset',type=str,help='path of input files under initial_data')
+parser.add_argument('--alldata',type=str,help='path of input files under initial_data')
 parser.add_argument('--bugs',type=str,help='path of input files under initial_data')
 parser.add_argument('--plm',type=str,help='name of pretrained languague model to test')
 parser.add_argument('--cache',type=str,default='/data/jwp/Models/huggingface/',help='dict of huggingface cache')
@@ -472,7 +507,10 @@ parser.add_argument('--gpu',type=str,default='',help='gpu id, if value is defaul
 parser.add_argument('--customodel',type=str,default='None',help='name of customodel')
 parser.add_argument('--customcache',type=str,default='../mutatedPLMs',help='path of customodel, if here, the plm is replaced..')
 parser.add_argument('--output',type=str,help='path of repaired models')
-parser.add_argument('--thres',type=str,default='m2s',choices=['zero','min','m1s','m2s'],help='threshold, m1s: mean-standard, m2s:mean-2standard')
+parser.add_argument('--thres',type=str,default='m2s',choices=['min','1sigma','2sigma','zero'],help='threshold, m1s: mean-standard, m2s:mean-2standard')
+parser.add_argument('--norm',type=str,default='l2',choices=['l2','l1','cos'],help='norm of distance')
+parser.add_argument('--tokendict',type=str,default='',help='path of customed token diction')
+parser.add_argument('--tokencache',type=str,default='',help='name of new cache')
 
 args = parser.parse_args()
 
@@ -501,7 +539,7 @@ fixed_model_path = args.output
 # TODO: load buggy contrast triples and deal with them into Dataloader
 
 BuggySet = LoadJson(bug_path)
-AllData = LoadJson(args.contrastset)
+AllData = LoadJson(args.alldata)
 
 Data = []
 
@@ -514,6 +552,12 @@ else:
     # model = AutoModel.from_pretrained(os.path.join('../mutatedPLMs',args.customodel))
     model = AutoModel.from_pretrained(os.path.join(args.customcache, args.customodel))
 
+if args.customodel =='None':
+    model_name =  str(args.plm)
+else:
+    model_name = str(args.customodel)
+
+model_name = model_name.replace('/','-')
 
 model.to(device)
 model.eval()
@@ -521,8 +565,15 @@ model.eval()
 refInput = []
 refOutput = []
 
-
-TH = GetThreshold(args.thres)
+if args.thres == 'zero':
+    TH = 0
+else:
+    if os.path.exists(os.path.join(args.tokencache,model_name+'.npy'))==True:
+        print("begin to load threshold")
+        TH = GetThresholdfromCache(args.norm,args.thres,os.path.join(args.tokencache,model_name+'.npy'))
+    else:
+        print("begin to calculate threshold.....")
+        TH = GetThreshold(args.norm,args.thres,os.path.join(args.tokencache,model_name+'.npy'),args.tokendict)
 
 for Mutate_Type in list(BuggySet.keys()):
 
@@ -545,9 +596,12 @@ for Mutate_Type in list(BuggySet.keys()):
     # choice = random.sample(choice,10)
 
     for i in choice:
-        refInput.append(tokenizer(AllData[Mutate_Type][i], return_tensors="pt",truncation=True,max_length=512,pad_to_max_length = True))
-        refOutput.append(feature_extraction(AllData[Mutate_Type][i]))
+        refInput.append(tokenizer(AllData[Mutate_Type][i][0:3], return_tensors="pt",truncation=True,max_length=512,pad_to_max_length = True))
+        
 
+        refOutput.append(feature_extraction(AllData[Mutate_Type][i][0:3]))
+
+        
 
 del(model)
 

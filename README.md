@@ -1,38 +1,19 @@
 # Testing4LMaaS
 ## TL;DR
-COSTELLO: Contrastive Testing for Large Language Model as a Service
+COSTELLO: Contrastive Testing for Large Language Model as a Service Embeddings
 
 ## Repo Structure
+The core file is as follows:
 1. `data` : It contains the dataset we used and the test suite we generated in our experiment.
-2. `Testing.py` : It contains the source codes of the validation stage in COSTELLO.
-3. `Evaluation.py` : It contains the source codes about how to construct the ground truth and evalute the test results by such as precsions.
+2. `Testing.py` : It contains the source codes of the testing stage in COSTELLO.
+3. `Evaluation-DCs.py` : It contains the source codes about how to construct the ground truth and evalute the test results by such as precsions.
 4. `TrainDCs.py` : It contains the source codes about how to train 14 downstream  classifiers.
 5. `Fixing.py` : It contains the source codes of our fixing experiment.
 
-```
--Generator/
-    -SentencePairTrans.py
-    -SentenceTrans.py
--data/
-    -builder.py
-    -ctset1.py
-    -SA.json
-    -sst_train.json
--DClassifier
-    -__init__.py
--buildContrastset.py
--Testing.py
--TrainDCs.py
--Evaluation.py
--Fixing.py
--plms.txt
--mutatePLMs.py
--README.md
--requirements.txt
-```
+
 ## Setup
 
-CRATE requires specific versions of some packages, which may conflict with others. Thus, a virtual environment is recommended.
+COSTELLO requires specific versions of some packages, which may conflict with others. Thus, a virtual environment is recommended.
 Firstly, you need to install python 3.8 and PyTorch 1.10.2 from [here](https://pytorch.org/get-started/locally/). Then install other packages, run:
 ```
 pip install -r ./requirements.txt
@@ -45,7 +26,7 @@ Here, we give a demo to show how to use our codes.
 
 To test the LLMs:
 ```
-python Testing.py --contrastset ./data/ctset1.json --plm bert-base-uncased --gpu 1 --output ./data/results/bert.json
+python Testing.py --contrastset ./data/ctset1.json --plm bert-base-uncased --gpu 1 --output ./data/results/bert.json --norm l2 --thres zero
 ```
 
 To get the ground truth and evaluate the test results:
@@ -67,8 +48,8 @@ The optional Args are:
 |--cache | the cache dir where the pretrained LLMs from Hugging face are saved locally | -|
 |--customodel | name of custom model , which can not be downloaded directly from Hugging face |  - | 
 |--customcache | path of the custom model. if the argument is used , the plm and cache argument is unavaliable | - |
-|--dis | the distance metric | ['l2','l1','cos'] |
-|--thres | the threshold | ['zero','min','m1s','m2s'] |
+|--norm | the distance metric | ['l2','l1','cos'] |
+|--thres | the threshold | ['min','1sigma','2sigma','zero'] |
 |--epoch | the training epochs of classifiers | 100 |
 
 
@@ -78,6 +59,15 @@ python buildContrastset --trans ./data/SA.json --input  ./data/sst_train.json --
 ```
 
 ## Reproducing Tips:
-We list the LLMs we employed in our evluation in `plms.txt`, and open source the code to generate various mutated models in `mutatePLMs.py`.
+We list the LLMs we employed in our evluation in `plm.list`, and LLMs we used in our fixing experiments in `plmsforfix.list`.
+We provide pipeline scripts to automatically run our experiments.
+Yor can reproduce our testing and evaluation experiment as:
+```
+python script.py
+```
+And you can reproduce our fixing experiment as:
+```
+python script-withfix.py
+```
 
 

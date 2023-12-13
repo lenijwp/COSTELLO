@@ -1,0 +1,10 @@
+albert-base-v2
+textattack/bert-base-uncased-imdb
+fabriceyhc/bert-base-uncased-imdb
+nateraw/bert-base-uncased-imdb
+Wakaka/bert-finetuned-imdb
+gchhablani/bert-base-cased-finetuned-sst2
+textattack-albert-base-v2-SST-2
+bert/base-cased-finetuned-mrpc
+Intel/bert-base-uncased-mrpc
+textattack/albert-base-v2-MRPC

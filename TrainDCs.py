@@ -128,14 +128,15 @@ def feature_extraction(inputs):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset',type=str,help='training data')
+parser.add_argument('--dataset',type=str,help='path of input files under initial_data')
+parser.add_argument('--validation',default='None',help='path of input files under initial_data')
 parser.add_argument('--plm',type=str,help='name of pretrained languague model to test')
 parser.add_argument('--cache',type=str,default='/data/jwp/Models/huggingface/',help='dict of huggingface cache')
-parser.add_argument('--output_dir',type=str,help='the dictionary of classifiers')
+parser.add_argument('--output_dir',type=str,help='the path ot new dictionary')
 parser.add_argument('--gpu',type=str,default='',help='gpu id, if value is default then use cpu')
-parser.add_argument('--customodel',type=str,default='None',help='name of customodel')
-parser.add_argument('--epoch',type=int,default=100,help='epoch')
-parser.add_argument('--customcache',type=str,default='../mutatedPLMs',help='path of customodel, if here, the plm is replaced..')
+parser.add_argument('--customodel',type=str,default='None',help='customodel')
+parser.add_argument('--epoch',type=int,default=100,help='customodel')
+parser.add_argument('--customcache',type=str,default='../mutatedPLMs',help='customodel, if here, the plm is replaced..')
 
 args = parser.parse_args()
 
@@ -170,6 +171,17 @@ for idx in inputdata.keys():
 
 embeddings=feature_extraction(sentences)
 
+
+if args.validation!='None':
+    inputdata=LoadJson(args.validation)
+    sentences=[]
+    labels_val=[]
+    for idx in inputdata.keys():
+        sentences.append(inputdata[idx][0])
+        labels_val.append(inputdata[idx][1])
+    embeddings_val=feature_extraction(sentences)
+    
+
 del model
 del tokenizer
 del inputdata
@@ -181,6 +193,10 @@ print(embeddings.shape)
 traindata=My_dataset(embeddings,labels)
 trainLoader=DataLoader(traindata,batch_size=64,shuffle=True)
 
+if args.validation!='None':
+    validLoader=DataLoader(My_dataset(embeddings_val,labels_val),batch_size=64,shuffle=True)
+else:
+    validLoader=DataLoader(traindata,batch_size=64,shuffle=True)
 
 # begin to create and train Downstream Classifier
 # TODO : delete the arg.plm
@@ -220,7 +236,7 @@ for model_k in range(14):
     print('Begin to train downstream classifer {}'.format(model_k))
 
     DC_record[model_k]={'best_train_acc':0.0}
-    optimizer = torch.optim.Adam(Dclf.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(Dclf.parameters(), lr=0.005)
     loss_fun = nn.CrossEntropyLoss()
 
     best_acc, best_epoch = 0, 0
@@ -239,7 +255,7 @@ for model_k in range(14):
             global_step += 1
 
         if epoch % 1 == 0:
-            val_acc = evalute(trainLoader)
+            val_acc = evalute(validLoader)
             if val_acc > best_acc:
                 best_epoch = epoch
                 best_acc = val_acc

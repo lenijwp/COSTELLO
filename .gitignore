@@ -4,3 +4,4 @@ data/results/
 *.pt
 *.bin
 data/fixmodel/
+SupplementaryExp/**/*.npy

@@ -147,13 +147,32 @@ def EuclideanDistance(x, y):
     dis = x2 + y2 - 2 * xy
     return dis
 
-@jit
+# @jit
+# def ManhattanDistance(x, y):
+#     print(x.shape)
+#     dis = np.zeros((x.shape[0],y.shape[0]))
+
+#     for i in range(x.shape[0]):
+#         for j in range(y.shape[0]):
+#             dis[i][j] = np.linalg.norm(x[i]-y[j],ord=1)
+
+#     return dis
+
+# # @jit
+# def ManhattanDistance(x, y):
+    
+#     differences = np.abs(x[:, np.newaxis, :] - x[np.newaxis, :, :])
+#     print(differences.shape)
+#     distances = differences.sum(axis=-1)
+#     return distances
+
+# @jit
 def ManhattanDistance(x, y):
+    
     dis = np.zeros((x.shape[0],y.shape[0]))
 
-    for i in range(x.shape[0]):
-        for j in range(y.shape[0]):
-            dis[i][j] = np.linalg.norm(x[i]-y[j],ord=1)
+    for i in trange(x.shape[0]):
+        dis[i] = np.sum(np.abs(x[i] - y), axis=1)
 
     return dis
 
@@ -168,16 +187,13 @@ def CosineDistance(x, y):
 
 
 import math
-def GetThreshold(thres):
-
-    if thres=='zero':
-        return 0
-
+def GetThreshold(norm,threstype,savecache=None, token_dict_path=''):
     global tokenizer
 
-    # wordset = tokenizer.get_vocab()
-
-    wordset = LoadJson('/data/jwp/codes/nlptest/ct4plm/data/initial_data/sst_tokens.json')
+    if token_dict_path=='':
+        wordset = tokenizer.get_vocab()
+    else:
+        wordset = LoadJson(token_dict_path)
 
     wordEmb=[]
 
@@ -206,7 +222,13 @@ def GetThreshold(thres):
 
     wordEmb = np.array(wordEmb)
 
-    worddis = EuclideanDistance(wordEmb,wordEmb)
+
+    if norm=='l1':
+        worddis = ManhattanDistance(wordEmb,wordEmb)
+    elif norm=='l2':
+        worddis = EuclideanDistance(wordEmb,wordEmb)
+    elif norm=='cos':
+        worddis = CosineDistance(wordEmb,wordEmb)
     for i in range(worddis.shape[0]):
         worddis[i][i]=10000000
 
@@ -216,18 +238,21 @@ def GetThreshold(thres):
     for i in range(worddis.shape[0]):
         closeDis[i] = worddis[i].min()
 
-    # if savecache!=None:
-    #     np.save(savecache, closeDis)
+    if savecache!=None:
+        np.save(savecache, closeDis)
 
     dist = getattr(stats, 'norm')
     parameters = dist.fit(closeDis)
 
-    if thres=='m1s':
-        th = parameters[0]-math.sqrt(parameters[1])
-    if thres=='m2s':
+    if threstype=='2sigma':
         th = parameters[0]-2*math.sqrt(parameters[1])
-    if thres=='min':
+    elif threstype=='1sigma':
+        th = parameters[0]-math.sqrt(parameters[1])
+    elif threstype=='min':
         th = min(closeDis)
+
+
+    
 
     if th<0:
         th=0
@@ -235,40 +260,46 @@ def GetThreshold(thres):
     return th
 
 
-# def GetThresholdfromCache(path):
+def GetThresholdfromCache(norm,threstype,path):
 
-#     closeDis=np.load(path)
+    closeDis=np.load(path)
 
-#     dist = getattr(stats, 'norm')
-#     parameters = dist.fit(closeDis)
-#     # th = parameters[0]-2*math.sqrt(parameters[1])
+    dist = getattr(stats, 'norm')
+    parameters = dist.fit(closeDis)
+    if threstype=='2sigma':
+        th = parameters[0]-2*math.sqrt(parameters[1])
+    elif threstype=='1sigma':
+        th = parameters[0]-math.sqrt(parameters[1])
+    elif threstype=='min':
+        th = min(closeDis)
 
-#     #th = parameters[0]
+    #th = parameters[0]
 
-#     th = min(closeDis)
 
-#     if th<0:
-#         th=0
+    if th<0:
+        th=0
 
-#     return th
-#     # return min(closeDis)
+    return th
+    # return min(closeDis)
 
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--contrastset',type=str,help='path of test suite')
+parser.add_argument('--contrastset',type=str,help='path of input files under initial_data')
 parser.add_argument('--plm',type=str,help='name of pretrained languague model to test')
 parser.add_argument('--cache',type=str,default='/data/jwp/Models/huggingface/',help='dict of huggingface cache')
 parser.add_argument('--gpu',type=str,default='',help='gpu id, if value is default then use cpu')
-parser.add_argument('--output',type=str,help='path of test results')
-parser.add_argument('--customodel',type=str,default='None',help='name of customodel')
-parser.add_argument('--customcache',type=str,default='../mutatedPLMs',help='path of customodel, if here, the plm is replaced..')
-parser.add_argument('--dis',type=str,default='l2',choices=['l2','l1','cos'],help='distance metric')
-parser.add_argument('--thres',type=str,default='zero',choices=['zero','min','m1s','m2s'],help='threshold, m1s: mean-standard, m2s:mean-2standard')
+parser.add_argument('--outputdir',type=str,help='path of input files under initial_data')
+parser.add_argument('--customodel',type=str,default='None',help='customodel')
+parser.add_argument('--customcache',type=str,default='../mutatedPLMs',help='customodel, if here, the plm is replaced..')
+parser.add_argument('--norm',type=str,default='l2',choices=['l2','l1','cos'],help='norm of distance')
+parser.add_argument('--thres',type=str,default='min',choices=['min','1sigma','2sigma','zero'],help='norm of distance')
+parser.add_argument('--tokendict',type=str,default='',help='path of customed token diction')
+parser.add_argument('--tokencache',type=str,default='',help='name of new cache')
 
 args = parser.parse_args()
 
-norm = args.dis
+norm = args.norm
 
 beta = 1.0
 
@@ -285,21 +316,24 @@ device=("cuda:"+str(args.gpu)) if torch.cuda.is_available() else "cpu"
 model.to(device)
 model.eval()
 
-# if args.customodel =='None':
-#     output_name =  str(args.plm)
-# else:
-#     output_name = str(args.customodel)
+if args.customodel =='None':
+    output_name =  str(args.plm)
+else:
+    output_name = str(args.customodel)
 
-output_name = args.output
+output_name = output_name.replace('/','-')
+
 
 TH = 0
 
-# if os.path.exists(os.path.join('./newdata/cache_wdissst',output_name+'.npy'))==True:
-#     print("begin to load threshold")
-#     TH = GetThresholdfromCache(os.path.join('./newdata/cache_wdissst',output_name+'.npy'))
-# else: 
-print("begin to calculate threshold.....")
-TH = GetThreshold(args.thres)
+if args.thres!='zero':
+
+    if os.path.exists(os.path.join(args.tokencache,output_name+'.npy'))==True:
+        print("begin to load threshold")
+        TH = GetThresholdfromCache(args.norm,args.thres,os.path.join(args.tokencache,output_name+'.npy'))
+    else:
+        print("begin to calculate threshold.....")
+        TH = GetThreshold(args.norm,args.thres,os.path.join(args.tokencache,output_name+'.npy'),args.tokendict)
 
 print("threshold is {}".format(TH))
 
@@ -324,7 +358,7 @@ for Mutate_Type in list(ContrastSet.keys()):
     print('Begin to test on {} contrast set'.format(Mutate_Type))
 
     for i in trange(len(Data)):
-        Triple = Data[i]
+        Triple = Data[i][0:3]
         
         Embs = feature_extraction(Triple)
 
@@ -345,4 +379,4 @@ for Mutate_Type in list(ContrastSet.keys()):
 
 
 
-WriteJson(Results,output_name)
+WriteJson(Results,os.path.join(args.outputdir,output_name))

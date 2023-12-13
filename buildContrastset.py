@@ -10,7 +10,7 @@ BaseDir=os.path.dirname(__file__)
 from Generator.SentenceTrans import SentenceGenerator
 # from Generator.SentencePairTrans import SentencePairGenerator
 
-os.path.append('/data/jwp/codes/Tools/NL-Augmenter')
+
 
 def WriteJson(data,path):
     '''
@@ -33,8 +33,8 @@ parser.add_argument('--input',type=str, default='sst_train.json',help='path of i
 parser.add_argument('--output',type=str,default='trysee.json',help='path of output contrastsets under initial_data')
 
 args = parser.parse_args()
-config=LoadJson(osp.join(BaseDir,'data/inputconfig',args.trans))
-data=LoadJson(osp.join(BaseDir,'data/initial_data',args.input))
+config=LoadJson(args.trans)
+data=LoadJson(args.input)
 
 results={}
 

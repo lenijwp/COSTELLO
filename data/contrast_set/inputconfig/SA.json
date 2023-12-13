@@ -1,0 +1,11 @@
+{
+    "generate":
+            {
+                "type":"SentenceTrans",
+                "singleProperty":["SenWordFuzz"],
+                "crossProperty":[
+
+                ]
+            },
+    "testing":[]
+}
