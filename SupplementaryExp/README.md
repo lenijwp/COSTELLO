@@ -1,7 +1,7 @@
 # Supplementary Experiments.
 We apply COSTELLO to test [BART](https://huggingface.co/facebook/bart-large-mnli),[T5](https://huggingface.co/google/flan-t5-base), [LLaMA2](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [OpenAI Embedding API](https://platform.openai.com/docs/guides/embeddings/what-are-embeddings).
 ## How to run
-We have collected the embeddings from those models or APIs. You can `cd` into the dir of {BART, LLaMA2, T5, OpenAI} and run 'bash script.sh' to perform the testing and evaluation.
+We have collected the embeddings from those models or APIs. You can `cd` into the dir of {BART, LLaMA2, T5, OpenAI} and run `bash script.sh` to perform the testing and evaluation.
 ```
 cd dir  
 bash script.sh
