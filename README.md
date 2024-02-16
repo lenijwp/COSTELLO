@@ -1,6 +1,14 @@
-# Testing4LMaaS
+# COSTELLO
 ## TL;DR
-COSTELLO: Contrastive Testing for Large Language Model as a Service Embeddings
+
+COSTELLO, a black-box approach to reveal potential defects in abstract embedding vectors from LLMaaS by
+contrastive testing. For the given interface of LLMaaS and seed inputs, COSTELLO can automatically generate test suites and output words with potential
+problematic embeddings. The idea is to synthesize contrastive samples with guidance, including positive and
+negative samples, by mutating seed inputs. COSTELLO leverage task-specific properties to control
+the mutation procedure and generate samples with known partial relationships in the high-dimensional
+space. Thus, it can compare the expected relationship (oracle) and embedding distance (output of LLMs) to
+locate potential buggy cases.
+
 
 ## Repo Structure
 The core file is as follows:
@@ -69,5 +77,3 @@ And you can reproduce our fixing experiment as:
 ```
 python script-withfix.py
 ```
-
-
