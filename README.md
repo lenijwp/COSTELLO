@@ -1,6 +1,6 @@
 # COSTELLO
 ## TL;DR
-Here is the codes of "COSTELLO: Contrastive Testing for Embedding-Based Large
+Here is the code of "COSTELLO: Contrastive Testing for Embedding-Based Large
 Language Model as a Service Embeddings", which is accepted by FSE2024.
 
 COSTELLO, a black-box approach to reveal potential defects in abstract embedding vectors from LLMaaS by
