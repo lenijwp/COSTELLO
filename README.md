@@ -79,3 +79,17 @@ And you can reproduce our fixing experiment as:
 ```
 python script-withfix.py
 ```
+
+## Cite
+```
+@article{jiang2024costello,
+  title={COSTELLO: Contrastive Testing for Embedding-Based Large Language Model as a Service Embeddings},
+  author={Jiang, Weipeng and Zhai, Juan and Ma, Shiqing and Zhang, Xiaoyu and Shen, Chao},
+  journal={Proceedings of the ACM on Software Engineering},
+  volume={1},
+  number={FSE},
+  pages={906--928},
+  year={2024},
+  publisher={ACM New York, NY, USA}
+}
+```
